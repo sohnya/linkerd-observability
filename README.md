@@ -135,3 +135,8 @@ To gain access to Linkerd’s observability features you need to install a Linke
     kubectl install -f manifests/dashboard-ingress.yml
     kubectl install -f manifests/emojivoto-ingress.yml
     ```
+
+# Final setup
+In my case, the resources can be found at
+- `dashboard.hilmaja.com`
+- `emojivoto.hilmaja.com`

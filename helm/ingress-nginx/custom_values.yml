@@ -1,0 +1,7 @@
+controller:
+  admissionWebhooks:
+    enabled: false
+  service:
+    loadBalancerIP: 34.72.248.131
+  metrics:
+    enabled: true

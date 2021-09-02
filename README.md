@@ -138,12 +138,7 @@ set up an IngressController and Ingresses for the dashboard and demo app.
     kubectl install -f manifests/dashboard-ingress.yml
     kubectl install -f manifests/emojivoto-ingress.yml
     ```
-5. Verify that the resources can be accessed
-
-    `dashboard.hilmaja.com`
-
-    `emojivoto.hilmaja.com`
-
+5. Verify that the resources can be accessed at dashboard.hilmaja.com and emojivoto.hilmaja.com
 
 # Observability
 Hello :) 

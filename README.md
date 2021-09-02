@@ -1,4 +1,5 @@
-# Setting up a Kubernetes Cluster for the lab
+# Setup
+## Setting up a Kubernetes Cluster for the lab
 Before installing Linkerd we need access to a Kubernetes Cluster. 
 1. Create a network that will be used by our application
     ```
@@ -22,7 +23,7 @@ Before installing Linkerd we need access to a Kubernetes Cluster.
     gcloud container clusters get-credentials linkerd-observability --region us-central1
     ```
 
-# Getting Started
+## Installing Linkerd
 To install Linkerd on your environment, follow the instructions below (instructions can be found https://linkerd.io/2.10/getting-started/#): 
 
 1. Install Linkerd
@@ -50,7 +51,7 @@ To install Linkerd on your environment, follow the instructions below (instructi
     linkerd check
     ```
 
-# Word on PodSecurityPolicies on GKE
+## Word on PodSecurityPolicies on GKE
 Part of the pre-check on my GKE cluster failed with the following messages:
 
 - `‼ has NET_ADMIN capability`: found 1 PodSecurityPolicies, but none provide NET_ADMIN, proxy injection will fail if the PSP admission controller is running
@@ -76,7 +77,7 @@ The installation also installed the Linkerd PSP which have the NET_ADMIN and NET
 ```
 The GKE cluster has a PSP called `gce.gke-metrics-agent`, and `kubectl describe psp` shows that `Allowed Capabilities: <none>`. 
 
-# Install viz to your cluster
+## Installing viz
 To gain access to Linkerd’s observability features you need to install a Linkerd extension called Viz (steps taken from https://linkerd.io/2.10/features/telemetry/:
 1. Install the extension into your Kubernetes cluster
     ```
@@ -91,7 +92,7 @@ To gain access to Linkerd’s observability features you need to install a Linke
     linkerd viz dashboard &
     ```
 
-# Install demo application
+## Installing the demo application
 1. Install emojivoto into the emojivoto namespace by running:
     ```
     curl -sL run.linkerd.io/emojivoto.yml | kubectl apply -f -
@@ -99,8 +100,8 @@ To gain access to Linkerd’s observability features you need to install a Linke
 2. Add Linkerd to the demo application by running
     ```
     kubectl get -n emojivoto deploy -o yaml \
-  | linkerd inject - \
-  | kubectl apply -f -
+    linkerd inject - \
+    kubectl apply -f -
     ```
 3. To see the emojivoto application "in action", do 
     ```
@@ -108,8 +109,10 @@ To gain access to Linkerd’s observability features you need to install a Linke
     ```
     and visit the web preview in your cloud shell. 
 
-# Install IngressController and Ingress
-1. Helm
+## Installing IngressController and Ingress
+To access the viz dashboard and the demo app from a fixed DNS, you can
+set up an IngressController and Ingresses for the dashboard and demo app. 
+1. Install the IngressController using Helm
     ```
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm repo update
@@ -130,13 +133,22 @@ To gain access to Linkerd’s observability features you need to install a Linke
     ```
     helm install ingress-nginx ingress-nginx/ingress-nginx --values custom_values.yaml --version 3.35.0
     ```
-4. Install the Ingress for the Linkerd dashboard
+4. Install the Ingress for the Linkerd dashboard and the emojivoto app
     ```
     kubectl install -f manifests/dashboard-ingress.yml
     kubectl install -f manifests/emojivoto-ingress.yml
     ```
+5. Verify that the resources can be accessed
 
-# Final setup
-In my case, the resources can be found at
-- `dashboard.hilmaja.com`
-- `emojivoto.hilmaja.com`
+    `dashboard.hilmaja.com`
+
+    `emojivoto.hilmaja.com`
+
+
+# Observability
+Hello :) 
+# Cleaning up
+```
+gcloud container clusters delete linkerd-observability \
+    --region us-central1
+```

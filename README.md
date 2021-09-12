@@ -1,12 +1,10 @@
 # Setup
 ## Setting up a Kubernetes Cluster for the lab
 Before installing Linkerd we need access to a Kubernetes Cluster. 
-1. Create a network that will be used by our application
+
+1. Enable the Google Kubernetes Engine API.
     ```
-    gcloud compute networks create default \
-    --subnet-mode=auto \
-    --bgp-routing-mode=regional \
-    --mtu=1460
+    gcloud services enable container.googleapis.com
     ```
 2. Create the GKE Kubernetes cluster
     ```
@@ -22,8 +20,9 @@ Before installing Linkerd we need access to a Kubernetes Cluster.
     ```
     gcloud container clusters get-credentials linkerd-observability --region us-central1
     ```
+4. Reserve a static IP address (if you don't have one already). In the Google Cloud Console, go to `VPC Network -> External IP addresses` and then click on `Reserve Static Address`. You can keep the default settings. 
 
-## Installing Linkerd
+### Installing Linkerd
 To install Linkerd on your environment, follow the instructions below (instructions can be found https://linkerd.io/2.10/getting-started/#): 
 
 1. Install Linkerd
@@ -51,7 +50,7 @@ To install Linkerd on your environment, follow the instructions below (instructi
     linkerd check
     ```
 
-## Word on PodSecurityPolicies on GKE
+### Word on PodSecurityPolicies on GKE
 Part of the pre-check on my GKE cluster failed with the following messages:
 
 - `‼ has NET_ADMIN capability`: found 1 PodSecurityPolicies, but none provide NET_ADMIN, proxy injection will fail if the PSP admission controller is running
@@ -77,7 +76,7 @@ The installation also installed the Linkerd PSP which have the NET_ADMIN and NET
 ```
 The GKE cluster has a PSP called `gce.gke-metrics-agent`, and `kubectl describe psp` shows that `Allowed Capabilities: <none>`. 
 
-## Installing viz
+### Installing viz
 To gain access to Linkerd’s observability features you need to install a Linkerd extension called Viz (steps taken from https://linkerd.io/2.10/features/telemetry/:
 1. Install the extension into your Kubernetes cluster
     ```
@@ -92,7 +91,7 @@ To gain access to Linkerd’s observability features you need to install a Linke
     linkerd viz dashboard &
     ```
 
-## Installing the demo application
+### Installing the demo application
 1. Install emojivoto into the emojivoto namespace by running:
     ```
     curl -sL run.linkerd.io/emojivoto.yml | kubectl apply -f -
@@ -100,8 +99,8 @@ To gain access to Linkerd’s observability features you need to install a Linke
 2. Add Linkerd to the demo application by running
     ```
     kubectl get -n emojivoto deploy -o yaml \
-    linkerd inject - \
-    kubectl apply -f -
+    | linkerd inject - \
+    | kubectl apply -f -
     ```
 3. To see the emojivoto application "in action", do 
     ```
@@ -109,17 +108,18 @@ To gain access to Linkerd’s observability features you need to install a Linke
     ```
     and visit the web preview in your cloud shell. 
 
-## Installing IngressController and Ingress
+### Installing IngressController and Ingress
 To access the viz dashboard and the demo app from a fixed DNS, you can
 set up an IngressController and Ingresses for the dashboard and demo app. 
-1. Install the IngressController using Helm
+1. In 
+2. Install the IngressController using Helm
     ```
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm repo update
     helm pull ingress-nginx/ingress-nginx --version 3.35.0
     tar -xvzf  ingress-nginx-3.35.0.tgz
     ```
-2. Make a `custom_values.yml` file to be used 
+3. Make a `custom_values.yml` file to be used 
     ```
     controller:
         admissionWebhooks:
@@ -129,16 +129,27 @@ set up an IngressController and Ingresses for the dashboard and demo app.
     metrics:
         enabled: true
     ```
-3. Install the helm chart with the custom values
+4. Install the helm chart with the custom values
     ```
     helm install ingress-nginx ingress-nginx/ingress-nginx --values custom_values.yaml --version 3.35.0
     ```
-4. Install the Ingress for the Linkerd dashboard and the emojivoto app
+5. In `manifests/dashboard-ingress.yml` and `manifests/emojivoto-ingress.yml`, there are routing rule for `dashboard.hilmaja.com` and `emojivoto.hilmaja.com` respectively. 
     ```
-    kubectl install -f manifests/dashboard-ingress.yml
-    kubectl install -f manifests/emojivoto-ingress.yml
+    spec:
+        ingressClassName: nginx
+        rules:
+            - host: dashboard.hilmaja.com
+              http:
+              paths:
+                - path: /
     ```
-5. Verify that the resources can be accessed at http://dashboard.hilmaja.com and http://emojivoto.hilmaja.com
+    If you want to follow along, make sure to change it to your own domain and add two A-records that point to the loadbalancer ingress IP defined above.  
+6. Install the Ingress for the Linkerd dashboard and the emojivoto app
+    ```
+    kubectl apply -f manifests/dashboard-ingress.yml
+    kubectl apply -f manifests/emojivoto-ingress.yml
+    ```
+7. Verify that the resources can be accessed at http://dashboard.yourdomain.com and http://emojivoto.yourdomain.com
 
 # Observability
 Hello :) 

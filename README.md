@@ -21,7 +21,7 @@ Before installing Linkerd we need an underlying Kubernetes Cluster. If you don't
     gcloud container clusters get-credentials linkerd-observability --region us-central1
     ```
 
-We will also be installing a nginx ingress controller and to prepare for this, we need a static IP address. If you don't have one already:
+We will also be installing an nginx ingress controller. To prepare for this, we need a static IP address. If you don't have one already:
 1. in the Google Cloud Console, go to _VPC Network_ -> _External IP addresses_, then click on _Reserve Static Address_. You can keep all the default settings. 
 
 ### Installing Linkerd
@@ -57,7 +57,7 @@ To install Linkerd on your environment, follow the instructions below (instructi
 
 ### Installing viz
 To gain access to Linkerd’s observability features, you will be using a Linkerd extension called Viz (steps taken from https://linkerd.io/2.10/features/telemetry/:
-1. Install the extension into your Kubernetes cluster, in the `linkerd-viz` namespace.
+1. Install the extension into your Kubernetes cluster; in the `linkerd-viz` namespace.
     ```
     linkerd viz install | kubectl apply -f -
     ```
@@ -113,7 +113,7 @@ To access the viz dashboard and the demo app from a fixed DNS, we will be settin
     ```
     helm install ingress-nginx . --values custom_values.yaml --version 3.35.0
     ```
-4. In `manifests/dashboard-ingress.yml` and `manifests/emojivoto-ingress.yml`, your can find routing rules the dashboard and the demo app, respectively. 
+4. In `manifests/dashboard-ingress.yml` and `manifests/emojivoto-ingress.yml` you can find routing rules in the dashboard and the demo app, respectively. 
     ```
     spec:
         ingressClassName: nginx
@@ -132,18 +132,20 @@ To access the viz dashboard and the demo app from a fixed DNS, we will be settin
 6. Verify that the resources can be accessed at http://dashboard.yourdomain.com and http://emojivoto.yourdomain.com
 
 # Observability
-### Golden Metrics
-- Success Rate
 
-```
-linkerd viz routes service/voting-svc -n emojivoto
-```
+Now that you've installed Linkerd, you can play around with many of the observability features of Linkerd. 
 
+Three of the so-called _golden metrics_,
+- Success Rate (50p, 95p, 99p)
 - Traffic (Requests per second)
-- Latencies 
+- Latencies
 
-### Debugging
-- https://linkerd.io/2.10/tasks/debugging-your-service/
+come with the `viz` installation.
+
+Distributed tracing is a feature that does not come out of the box for Linkerd. To enable this feature, we have to 
+- install the Jaeger plugin
+- Update the headers in the application requests. 
+The steps to do this can be found in https://linkerd.io/2.10/tasks/distributed-tracing/. 
 
 # Cleaning up
 ```

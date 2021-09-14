@@ -1,3 +1,7 @@
+# Presentation
+This repository was made for a demo presentation on Linkerd observability for a McGill course. 
+
+The slides for the presentation can be found in this folder. 
 # Setup
 ## Setting up our Kubernetes Cluster
 Before installing Linkerd we need an underlying Kubernetes Cluster. If you don't have one, you can create on with the following steps:
